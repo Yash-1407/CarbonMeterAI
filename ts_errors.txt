@@ -1,0 +1,14 @@
+app/api/chat/route.ts(35,17): error TS2551: Property 'toDataStreamResponse' does not exist on type 'StreamTextResult<ToolSet, Output<string, string, never>>'. Did you mean 'toTextStreamResponse'?
+app/auth/login/page.tsx(32,11): error TS2353: Object literal may only specify known properties, and 'emailRedirectTo' does not exist in type '{ captchaToken?: string | undefined; }'.
+components/ai-chatbot.tsx(4,25): error TS2307: Cannot find module 'ai/react' or its corresponding type declarations.
+components/ai-chatbot.tsx(78,30): error TS7006: Parameter 'message' implicitly has an 'any' type.
+components/iot/iot-charts.tsx(91,59): error TS18048: 'percent' is possibly 'undefined'.
+components/ui/chart.tsx(109,3): error TS2339: Property 'payload' does not exist on type 'Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; allowEscapeViewBox?: AllowInDimension | undefined; ... 24 more ...; wrapperStyle?: CSSProperties | undefined; } & ClassAttributes<...> & HTMLAttributes<...> & { ...; }'.
+components/ui/chart.tsx(114,3): error TS2339: Property 'label' does not exist on type 'Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; allowEscapeViewBox?: AllowInDimension | undefined; ... 24 more ...; wrapperStyle?: CSSProperties | undefined; } & ClassAttributes<...> & HTMLAttributes<...> & { ...; }'.
+components/ui/chart.tsx(182,23): error TS7006: Parameter 'item' implicitly has an 'any' type.
+components/ui/chart.tsx(182,29): error TS7006: Parameter 'index' implicitly has an 'any' type.
+components/ui/chart.tsx(260,39): error TS2344: Type '"payload" | "verticalAlign"' does not satisfy the constraint '"string" | "name" | "path" | "type" | "id" | "filter" | "fill" | "values" | "style" | "clipPath" | "mask" | "key" | "suppressHydrationWarning" | "className" | "lang" | "tabIndex" | ... 428 more ... | "portal"'.
+  Type '"payload"' is not assignable to type '"string" | "name" | "path" | "type" | "id" | "filter" | "fill" | "values" | "style" | "clipPath" | "mask" | "key" | "suppressHydrationWarning" | "className" | "lang" | "tabIndex" | ... 428 more ... | "portal"'.
+components/ui/chart.tsx(266,17): error TS2339: Property 'length' does not exist on type '{}'.
+components/ui/chart.tsx(278,16): error TS2339: Property 'map' does not exist on type '{}'.
+components/ui/chart.tsx(278,21): error TS7006: Parameter 'item' implicitly has an 'any' type.
