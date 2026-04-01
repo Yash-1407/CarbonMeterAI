@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json()
 
   const result = await streamText({
-    model: groq("llama-3.1-70b-versatile"),
+    model: groq("llama-3.1-70b-versatile") as any,
     messages,
     system: `You are EcoBot, a helpful AI assistant for the Carbon Meter app. You help users:
 

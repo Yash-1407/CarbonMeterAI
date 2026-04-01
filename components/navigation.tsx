@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Leaf, Menu, User, X } from "lucide-react"
+import { Leaf, Menu, User, X, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -65,6 +65,9 @@ export function Navigation() {
                 </Link>
                 <Link href="/reports" className="text-foreground hover:text-primary transition-colors">
                   Reports
+                </Link>
+                <Link href="/insights" className="text-foreground hover:text-indigo-600 transition-colors font-medium flex items-center gap-1">
+                  <Sparkles className="w-4 h-4" /> AI Insights
                 </Link>
                 <Link href="/community" className="text-foreground hover:text-primary transition-colors">
                   Community
@@ -134,6 +137,13 @@ export function Navigation() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Reports
+                  </Link>
+                  <Link
+                    href="/insights"
+                    className="text-foreground hover:text-indigo-600 transition-colors flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Sparkles className="w-4 h-4" /> AI Insights
                   </Link>
                   <Link
                     href="/community"
