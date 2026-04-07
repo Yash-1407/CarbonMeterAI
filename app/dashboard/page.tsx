@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { BarChart3, Calculator, Leaf, Target, TrendingDown, Users } from "lucide-react"
 import Link from "next/link"
+import AvatarWidget from "@/components/AvatarWidget"
+import { CarbonPrediction } from "@/components/CarbonPrediction"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -49,11 +51,16 @@ export default async function DashboardPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome back, {profile?.full_name || profile?.username || "there"}!
-          </h1>
-          <p className="text-muted-foreground">Here's your carbon footprint overview</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Welcome back, {profile?.full_name || profile?.username || "there"}!
+            </h1>
+            <p className="text-muted-foreground">Here's your carbon footprint overview</p>
+          </div>
+          <div className="w-full md:w-80 shrink-0">
+            <AvatarWidget />
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -153,6 +160,9 @@ export default async function DashboardPage() {
 
         {/* Recent Activities */}
         <RecentActivities />
+        
+        {/* Carbon Prediction */}
+        <CarbonPrediction />
       </div>
     </div>
   )
