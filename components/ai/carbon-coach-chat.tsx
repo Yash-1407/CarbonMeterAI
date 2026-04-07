@@ -1,20 +1,32 @@
 "use client"
 
-import { useState } from "react"
-import { useChat } from "ai/react"
+import type React from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { MessageCircle, Send, Bot, User, Minimize2, Maximize2 } from "lucide-react"
 
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: string
+}
+
 export function CarbonCoachChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat-claude",
-  })
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages])
 
   const toggleChat = () => {
     setIsOpen(!isOpen)
@@ -22,6 +34,107 @@ export function CarbonCoachChat() {
   }
 
   const toggleMinimize = () => setIsMinimized(!isMinimized)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+    }
+
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
+    setInput("")
+    setIsLoading(true)
+
+    const assistantId = (Date.now() + 1).toString()
+    setMessages(prev => [...prev, { id: assistantId, role: "assistant", content: "" }])
+
+    try {
+      console.log("[CarbonCoach] Sending to /api/chat-claude...");
+      const response = await fetch("/api/chat-claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
+        }),
+      })
+
+      console.log("[CarbonCoach] Response status:", response.status);
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`)
+      }
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder("utf-8")
+
+      console.log("[CarbonCoach] Got reader:", !!reader);
+
+      if (reader) {
+        let buffer = ""
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) {
+            console.log("[CarbonCoach] Stream done");
+            break
+          }
+
+          const rawChunk = decoder.decode(value, { stream: true })
+          console.log("[CarbonCoach] Raw chunk:", rawChunk);
+          buffer += rawChunk
+          
+          let newlineIndex: number
+          while ((newlineIndex = buffer.indexOf("\n")) >= 0) {
+            const line = buffer.slice(0, newlineIndex).trim()
+            buffer = buffer.slice(newlineIndex + 1)
+
+            if (!line) continue;
+            console.log("[CarbonCoach] Parsed line:", line);
+
+            if (line.startsWith("data: ")) {
+              const dataStr = line.slice(6).trim()
+              if (dataStr === "[DONE]") {
+                console.log("[CarbonCoach] Received [DONE]");
+                break
+              }
+              if (dataStr) {
+                try {
+                  const data = JSON.parse(dataStr)
+                  console.log("[CarbonCoach] Parsed data:", data);
+                  if (data.text) {
+                    setMessages(prev =>
+                      prev.map(msg =>
+                        msg.id === assistantId
+                          ? { ...msg, content: msg.content + data.text }
+                          : msg
+                      )
+                    )
+                  }
+                } catch (parseErr) {
+                  console.error("[CarbonCoach] JSON parse error:", parseErr, "raw:", dataStr);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Carbon Coach error:", error)
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantId
+            ? { ...msg, content: "Sorry, I couldn't connect to the AI service. Please try again." }
+            : msg
+        )
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   if (!isOpen) {
     return (
@@ -58,7 +171,7 @@ export function CarbonCoachChat() {
 
       {!isMinimized && (
         <CardContent className="p-0 flex flex-col h-[calc(500px-4rem)]">
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             <div className="space-y-4">
               {messages.length === 0 && (
                 <div className="text-center text-muted-foreground py-8 animate-in fade-in zoom-in duration-500">
@@ -114,7 +227,7 @@ export function CarbonCoachChat() {
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
                 value={input}
-                onChange={handleInputChange}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask me anything..."
                 className="flex-1"
                 disabled={isLoading}

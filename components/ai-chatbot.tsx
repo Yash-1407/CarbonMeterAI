@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useChat } from "ai/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,9 +11,84 @@ export function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat",
-  })
+  const [messages, setMessages] = useState<any[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = { id: Date.now().toString(), role: "user", content: input };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput("");
+    setIsLoading(true);
+
+    const assistantId = (Date.now() + 1).toString();
+    setMessages(prev => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+
+    try {
+      const response = await fetch("/api/chat-claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      if (reader) {
+        let isDone = false;
+        let buffer = "";
+        while (!isDone) {
+          const { value, done } = await reader.read();
+          isDone = done;
+          if (value) {
+            buffer += decoder.decode(value, { stream: true });
+            let newlineIndex;
+            while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+              const line = buffer.slice(0, newlineIndex).trim();
+              buffer = buffer.slice(newlineIndex + 1);
+              
+              if (line.startsWith("data: ")) {
+                const dataStr = line.slice(6).trim();
+                if (dataStr === "[DONE]") {
+                  isDone = true;
+                  break;
+                }
+                if (dataStr) {
+                  try {
+                    const data = JSON.parse(dataStr);
+                    if (data.text) {
+                      setMessages(prev => prev.map(msg => 
+                        msg.id === assistantId ? { ...msg, content: msg.content + data.text } : msg
+                      ));
+                    }
+                  } catch (err) {
+                    // Ignore JSON parsing errors for malformed lines
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => prev.map(msg => 
+        msg.id === assistantId ? { ...msg, content: "Sorry, an error occurred communicating with the Carbon Coach." } : msg
+      ));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const toggleChat = () => {
     setIsOpen(!isOpen)

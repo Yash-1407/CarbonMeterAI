@@ -4,7 +4,6 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "next-themes"
-import { SimpleChatbot } from "@/components/simple-chatbot"
 import { CarbonCoachChat } from "@/components/ai/carbon-coach-chat"
 import { Suspense } from "react"
 import "./globals.css"
@@ -26,7 +25,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <Suspense fallback={null}>
             {children}
-            <SimpleChatbot />
             <CarbonCoachChat />
           </Suspense>
         </ThemeProvider>
