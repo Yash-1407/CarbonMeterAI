@@ -1,0 +1,15 @@
+{
+  "ledger": [
+    {
+      "type": "EARNED",
+      "userId": "f30e6742-f26e-43d2-9c85-04dd288dbf09",
+      "amount": 1,
+      "activity": "Logged Bus",
+      "txHash": "0xb7d0f23b",
+      "blockNumber": 1000001,
+      "timestamp": "2026-04-08T09:26:28.672Z",
+      "status": "CONFIRMED"
+    }
+  ],
+  "currentBlock": 1000001
+}

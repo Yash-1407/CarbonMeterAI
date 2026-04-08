@@ -98,3 +98,29 @@ ALTER TABLE public.community_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.game_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leaderboard ENABLE ROW LEVEL SECURITY;
+
+-- Create ccct_transactions table for persistent Carbon Credit tracking
+CREATE TABLE IF NOT EXISTS public.ccct_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- 'EARNED', 'SENT', 'RECEIVED'
+  amount DECIMAL(10,2) NOT NULL,
+  activity TEXT,
+  sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  recipient_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  tx_hash TEXT NOT NULL,
+  block_number INTEGER NOT NULL,
+  status TEXT DEFAULT 'CONFIRMED',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS for ccct_transactions (you'll need a policy if not using Service Role)
+-- Since the frontend handles validation and writes via API, we allow anon to inset temporarily for the mock,
+-- or more securely, let backend API bypass RLS (if you have service_role), but standard anon Next.js client needs a policy.
+ALTER TABLE public.ccct_transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow anon/authenticated access to ccct_transactions for mock API" 
+ON public.ccct_transactions 
+FOR ALL 
+USING (true) WITH CHECK (true);
+

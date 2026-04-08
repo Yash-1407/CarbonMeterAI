@@ -30,7 +30,7 @@ export function useCarbonScore() {
         .eq('user_id', user.id);
 
       if (!error && data) {
-        const totalScore = data.reduce((sum, a) => sum + Number(a.carbon_footprint || 0), 0);
+        const totalScore = data.reduce((sum: number, a: any) => sum + Number(a.carbon_footprint || 0), 0);
         setScore(totalScore);
       }
     }

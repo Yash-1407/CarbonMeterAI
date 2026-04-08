@@ -27,18 +27,19 @@ export async function saveIoTConfiguration(type: string, module: string, data: a
   }
   
   // Save recurring job if requested
-  if (data.frequency && data.frequency !== "None") {
+  if (data.frequency && data.frequency !== "None" && result && result[0]) {
     // Determine a reference date (default to today)
     const referenceDate = data.usageDate ? new Date(data.usageDate) : new Date();
     const nextRun = calculateNextRun(data.frequency, referenceDate);
     
     // Omit fields not needed directly but copy everything standard for reference payload
     const { user_id, ...payloadWithoutUser } = payload;
+    const finalPayload = { ...payloadWithoutUser, original_id: result[0].id };
     
     const { error: recurError } = await supabase.from("recurring_activities").insert({
       user_id: user.id,
       source_table: "iot_data",
-      reference_payload: payloadWithoutUser,
+      reference_payload: finalPayload,
       frequency: data.frequency,
       next_run_at: nextRun.toISOString(),
       is_active: true
@@ -105,6 +106,21 @@ export async function updateIoTData(id: string, updateData: any) {
 
 export async function deleteIoTData(id: string) {
   const supabase = createClient()
+  
+  // Clean up any recurring activities tied to this original_id natively
+  const { data: userAuth } = await supabase.auth.getUser();
+  if (userAuth?.user) {
+     const { data: recurActs } = await supabase
+        .from('recurring_activities')
+        .select('*')
+        .eq('user_id', userAuth.user.id);
+        
+     const toDelete = recurActs?.find((act: any) => act.reference_payload?.original_id === id);
+     if (toDelete) {
+         await supabase.from('recurring_activities').delete().eq('id', toDelete.id);
+     }
+  }
+
   const { error } = await supabase
     .from('iot_data')
     .delete()

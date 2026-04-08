@@ -33,9 +33,10 @@ ON public.recurring_activities FOR DELETE
 USING (auth.uid() = user_id);
 
 -- 4. Enable Supabase Realtime for the table so Dashboards auto-update
-BEGIN;
-  CREATE PUBLICATION supabase_realtime_recurring;
+DO $$ 
+BEGIN
+  CREATE PUBLICATION supabase_realtime;
 EXCEPTION WHEN duplicate_object THEN
   -- do nothing
-END;
+END $$;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.recurring_activities;

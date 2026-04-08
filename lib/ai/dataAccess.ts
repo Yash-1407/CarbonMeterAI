@@ -5,18 +5,35 @@ export async function getUserHistory() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
+  // Fetch AI/IoT synced data
+  const { data: iotData, error: iotError } = await supabase
     .from('iot_data')
     .select('*')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(30);
 
-  if (error) {
-    console.error('Error fetching user history:', error);
-    return [];
+  if (iotError && iotError.code !== '42P01') { 
+    console.error('Error fetching iot history:', iotError);
   }
 
-  return data;
+  // Fetch manually logged carbon activities
+  const { data: carbonData, error: carbonError } = await supabase
+    .from('carbon_activities')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (carbonError) {
+    console.error('Error fetching carbon activities:', carbonError);
+  }
+
+  // Combine and sort by date descending
+  const combined = [...(iotData || []), ...(carbonData || [])];
+  combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  return combined.slice(0, 30);
 }
 
 export async function getCategoryHistory(category: string) {

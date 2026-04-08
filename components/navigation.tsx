@@ -6,7 +6,7 @@ import { Leaf, Menu, User, X, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import type { User as SupabaseUser } from "@supabase/supabase-js"
+import type { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js"
 
 export function Navigation() {
   const [user, setUser] = useState<SupabaseUser | null>(null)
@@ -26,7 +26,7 @@ export function Navigation() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null)
     })
 
@@ -65,6 +65,9 @@ export function Navigation() {
                 </Link>
                 <Link href="/reports" className="text-foreground hover:text-primary transition-colors">
                   Reports
+                </Link>
+                <Link href="/carbon-trading" className="text-foreground hover:text-primary transition-colors">
+                  Carbon Trading ⛓️
                 </Link>
                 <Link href="/insights" className="text-foreground hover:text-indigo-600 transition-colors font-medium flex items-center gap-1">
                   <Sparkles className="w-4 h-4" /> AI Insights
@@ -137,6 +140,13 @@ export function Navigation() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Reports
+                  </Link>
+                  <Link
+                    href="/carbon-trading"
+                    className="text-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Carbon Trading ⛓️
                   </Link>
                   <Link
                     href="/insights"

@@ -153,10 +153,29 @@ export function CarbonCalculator() {
       setNotes("")
       setCalculatedFootprint(null)
 
+      // Automatically earn 1 CCCT via Carbon Trading module
+      try {
+        const ccctRes = await fetch('/api/carbon-trading/earn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: user.id, 
+            activity: `Logged ${getCategoryDisplayName(activity.category)}`, 
+            credits: 1 
+          })
+        });
+        const ccctData = await ccctRes.json();
+        if (!ccctData.success) {
+          console.error("CCCT Earn failed:", ccctData.message);
+        }
+      } catch (err) {
+        console.error("Failed to earn CCCT automatically:", err);
+      }
+
       // Show success message
       toast({
         title: "Activity Saved Successfully",
-        description: "Your carbon activity has been logged.",
+        description: "Your carbon activity has been logged and you earned 1 CCCT!",
       })
       router.refresh() // Silently invalidates Next.js App Router cache
     } catch (error) {

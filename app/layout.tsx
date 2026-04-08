@@ -5,13 +5,14 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "next-themes"
 import { CarbonCoachChat } from "@/components/ai/carbon-coach-chat"
+import { CronTrigger } from "@/components/recurring/cron-trigger"
 import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "CarbonMeter",
+  description: "Track your carbon footprint and reduce your impact",
+  generator: "CarbonMeter",
 }
 
 export default function RootLayout({
@@ -26,6 +27,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             {children}
             <CarbonCoachChat />
+            <CronTrigger />
           </Suspense>
         </ThemeProvider>
         <Analytics />
